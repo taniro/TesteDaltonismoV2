@@ -1,10 +1,12 @@
 package br.ufrn.eaj.tads.testedaltonismo;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +22,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+        Boolean salvar = prefs.getBoolean("salvar", false);
+
+        if (salvar){
+            r1 = prefs.getString("resposta1", "");
+            r2 = prefs.getString("resposta2", "");
+            r3 = prefs.getString("resposta3", "");
+
+            CheckBox cb = findViewById(R.id.checkBox);
+            cb.setChecked(true);
+
+            reloadTextViews();
+        }
     }
 
     @Override
@@ -33,6 +49,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+
+        CheckBox cb = findViewById(R.id.checkBox);
+
+        if (cb.isChecked()){
+            SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+
+            editor.putBoolean("salvar", true);
+            editor.putString("resposta1", r1);
+            editor.putString("resposta2", r2);
+            editor.putString("resposta3", r3);
+
+            editor.commit();
+        }else{
+            SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+
+            editor.remove("salvar");
+            editor.remove("resposta1");
+            editor.remove("resposta2");
+            editor.remove("resposta3");
+
+            editor.commit();
+        }
+    }
+
+    @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         Log.i("AULA", "Invocou o metodo onRestoreInstanceState");
@@ -41,6 +86,10 @@ public class MainActivity extends AppCompatActivity {
         r2 = savedInstanceState.getString("resposta2");
         r3 = savedInstanceState.getString("resposta3");
 
+        reloadTextViews();
+    }
+
+    private void reloadTextViews() {
         TextView tv1 = findViewById(R.id.resposta1);
         TextView tv2 = findViewById(R.id.resposta2);
         TextView tv3 = findViewById(R.id.resposta3);
